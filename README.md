@@ -78,12 +78,12 @@ See [SKILL.md](SKILL.md) for full config reference.
 ## Installation / 安装
 
 ```bash
-curl -sL https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/master/install.sh | bash
+curl -sL https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/main/install.sh | bash
 ```
 
 Windows PowerShell:
 ```powershell
-iwr https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/master/install.ps1 | iex
+iwr https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/main/install.ps1 | iex
 ```
 
 ### Manual

@@ -1,5 +1,4 @@
-# skills-audit — multi-platform installer (Windows PowerShell)
-# iwr https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/master/install.ps1 | iex
+# skills-audit installer — iwr https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 

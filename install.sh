@@ -1,6 +1,5 @@
 #!/bin/bash
-# skills-audit — multi-platform one-line installer
-# curl -sL https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/master/install.sh | bash
+# skills-audit installer — curl -sL https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/main/install.sh | bash
 
 set -e
 
