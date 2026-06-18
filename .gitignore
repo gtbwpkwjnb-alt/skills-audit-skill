@@ -1,0 +1,10 @@
+# Build output
+dist/
+
+# Runtime data
+harvests/*/202[0-9]-*.md
+harvests/*/20[0-9][0-9]-*.md
+!harvests/index.md
+!harvests/error-ledger.md
+!harvests/_self-stats.md
+!harvests/*/errors.md

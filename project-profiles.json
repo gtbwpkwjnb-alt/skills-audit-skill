@@ -1,0 +1,17 @@
+{
+  "currentHash": "c187fb76",
+  "profiles": {
+    "c187fb76": {
+      "path": "C:\\Users\\Administrator\\ZCodeProject",
+      "type": "ZCode 技能开发与维护",
+      "fileTypes": [".md", ".mjs"],
+      "techStack": ["ZCode CLI", "Markdown", "YAML"],
+      "firstSeen": "2026-06-17",
+      "lastSeen": "2026-06-18",
+      "runCount": 4,
+      "skillCounts": {"user": 4, "plugin": 59},
+      "archivedCount": 6,
+      "note": "本次清理3个跨平台symlink (ai-research-llm/make-game/scrapling)，归档总数从3增至6"
+    }
+  }
+}

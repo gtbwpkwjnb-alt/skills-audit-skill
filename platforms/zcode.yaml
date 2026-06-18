@@ -1,0 +1,6 @@
+platform: zcode
+scan_paths:
+  user: "~/.zcode/skills/*/"
+  plugin: "~/.zcode/cli/plugins/cache/*/*/skills/*/"
+archive_dir: "~/.zcode/skills-archived/"
+trigger_words: ["skills-audit", "技能审查", "审查技能"]

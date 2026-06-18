@@ -1,0 +1,29 @@
+# skills-audit 配置
+# 按你的平台修改 scan_paths 和 archive_dir
+
+data_dir: "$SKILL_DIR"
+archive_dir: "$SKILL_DIR/../archived"
+
+scan_paths:
+  - name: "用户工具"
+    path: "~/.zcode/skills/*/"
+    type: user
+    editable: true
+  - name: "插件工具"
+    path: "~/.zcode/cli/plugins/cache/*/*/skills/*/"
+    type: system
+    editable: false
+
+custom_rules:
+
+quality_checks:
+  - name: "中文描述"
+    weight: 25
+  - name: "触发词清晰"
+    weight: 25
+  - name: "≤40字符"
+    weight: 25
+  - name: "单行无换行"
+    weight: 25
+
+output_language: "auto"  # auto / zh / en
