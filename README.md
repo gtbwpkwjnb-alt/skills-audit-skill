@@ -4,9 +4,10 @@
 > One-command audit: profile, score, and optimize all your agent tools across platforms.
 > **跨平台**: ZCode · Claude Code · Codex · Cursor · Windsurf
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-3.2.0-blue)](VERSION)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-ZCode%20%7C%20Claude%20Code%20%7C%20Codex-lightgrey)]()
+[![Platform](https://img.shields.io/badge/platform-ZCode%20%7C%20Claude%20Code%20%7C%20Codex%20%7C%20Cursor%20%7C%20Windsurf-lightgrey)]()
+[![skills.sh](https://img.shields.io/badge/skills.sh-listed-6f42c1)](https://skills.sh/gtbwpkwjnb-alt/skills-audit-skill)
 
 ---
 
@@ -103,7 +104,7 @@ git clone git@github.com:gtbwpkwjnb-alt/skills-audit-skill.git ~/.codex/skills/s
 
 ## Changelog
 
-### v3.0.0 (2026-06-18) — 多平台通用化
+### v3.2.0 (2026-06-18) — 多平台通用化 + Agent Skills 标准合规
 
 - 🌍 **Multi-platform** — ZCode / Claude Code / Codex / Cursor / Windsurf
 - 📋 **config.yaml** — 可配置 scan paths, archive dir, custom rules

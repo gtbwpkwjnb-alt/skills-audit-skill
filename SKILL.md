@@ -1,9 +1,15 @@
 ---
 name: skills-audit
 version: "3.2.0"
-description: 审查技能 → 画像·评分·优化。多平台通用。
-description_zh: 技能审查 → 画像·评分·优化。多平台通用。触发词：skills-audit / 技能审查。
-description_en: Skills audit → profile · score · optimize. Multi-platform. Trigger: skills-audit.
+description: Use when the user wants to audit, score, and optimize their installed AI agent skills, tools, and plugins. Provides a 4-dimension scoring report (project fit, retention, description quality, maintainability) with optimization suggestions. Multi-platform: ZCode, Claude Code, Codex, Cursor, Windsurf. Trigger: skills-audit.
+description_zh: 当用户想要审查、评分、优化已安装的 AI 代理技能/工具/插件时使用。提供四维评分报告（项目适配、留存趋势、描述质量、可维护性）及优化建议。多平台通用：ZCode/Claude Code/Codex/Cursor/Windsurf。触发词：skills-audit / 技能审查 / 审查技能。
+description_en: Use when the user wants to audit, score, and optimize their installed AI agent skills, tools, and plugins. Provides a 4-dimension scoring report (project fit, retention, description quality, maintainability) with optimization suggestions. Multi-platform: ZCode, Claude Code, Codex, Cursor, Windsurf. Trigger: skills-audit.
+license: MIT
+compatibility: ZCode, Claude Code, Codex, Cursor, Windsurf, any agent with custom-skill support
+metadata:
+  author: gtbwpkwjnb-alt
+  version: "3.2.0"
+  tags: audit, scoring, optimization, tool-management, self-evolution, zcode, claude-code, codex, cursor, windsurf
 zcode_priority: 100
 user-invocable: true
 ---
