@@ -1,9 +1,10 @@
 ---
 name: skills-audit
-version: "3.1.0"
+version: "3.2.0"
 description: 审查技能 → 画像·评分·优化。多平台通用。
 description_zh: 技能审查 → 画像·评分·优化。多平台通用。触发词：skills-audit / 技能审查。
 description_en: Skills audit → profile · score · optimize. Multi-platform. Trigger: skills-audit.
+zcode_priority: 100
 user-invocable: true
 ---
 
@@ -135,9 +136,37 @@ user-invocable: true
 | 工具 ≥ 10 | 运行审查清理 | 工具过多需定期整理 |
 | 用户工具 < 3 | 添加创作类工具 | 工具生态起步需要创作工具 |
 
+### ⑥-B 技能排序
+
+根据使用数据计算 `zcode_priority`（0-100），输出命令栏推荐顺序。
+
+**计算公式**：
+```
+zcode_priority = min(100, timesInvoked × 20 + retentionScore × 0.5)
+```
+
+| 因子 | 权重 | 说明 |
+|------|------|------|
+| `timesInvoked` | ×20 | 实际调用次数（会话摘要解析），主导排序 |
+| `retentionScore` | ×0.5 | 留存评分稳定性，微调 |
+
+输出：
+```
+📊 命令栏推荐顺序（按 zcode_priority 降序）
+| # | 工具 | 调用 | 留存 | 优先级 |
+|---|------|------|------|--------|
+| 1 | xxx  | 4    | 93   | 100    |
+| 2 | xxx  | 2    | 79   | 80     |
+```
+
+> ⚠️ **提案标准**：`zcode_priority` 写入 SKILL.md 前端。ZCode 当前不读取此字段，排序暂不生效。同时输出 `.skill-order.json` 供手动参考。期待 ZCode 未来支持此字段后自动生效。
+>
+> **手动模式**：用户可在 `config.yaml` 设置 `sort_mode: manual` 并编辑 `manual_order` 列表覆盖自动排序。
+
 ```
 待确认操作：
   [ ] 修复 N 个描述
+  [ ] 写入 zcode_priority 到各 SKILL.md
   [ ] 归档 N 个低分工具
 回复"执行"开始操作，回复"跳过"仅保存评分数据。
 ```
@@ -146,6 +175,7 @@ user-invocable: true
 
 - 描述修复：修改工具定义文件的 `description` 字段
 - 双语补充：为缺少 `description_zh` 或 `description_en` 的工具添加对应字段
+- 技能排序：写入 `zcode_priority` 字段到各用户 SKILL.md 前端
 - 归档：移入 `config.yaml` 中的 `archive_dir`
 - 只操作用户工具，不碰系统级
 
@@ -156,6 +186,7 @@ user-invocable: true
 3. 留存统计 → 每工具更新 `usage-<name>.json`
 4. 运行统计 → 更新 `stats.json`
 5. 活动日志 → 追加 `activity-log.jsonl`
+6. 排序清单 → 写入 `data_dir/.skill-order.json`
 
 **持久化失败不阻塞**。
 

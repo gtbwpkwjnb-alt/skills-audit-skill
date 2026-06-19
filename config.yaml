@@ -27,3 +27,7 @@ quality_checks:
     weight: 25
 
 output_language: "auto"  # auto / zh / en
+
+# 技能排序模式
+sort_mode: "frequency"  # frequency = 按使用频率降序 | manual = 手动指定
+manual_order: []         # sort_mode=manual 时生效，技能名列表，自上而下
