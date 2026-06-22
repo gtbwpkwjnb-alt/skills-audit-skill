@@ -1,10 +1,10 @@
-# Skills Audit v4.0 — 项目技能推荐引擎
+# Skills Audit v4.3.0 — 项目技能推荐引擎
 
-> **Project Skill Audit** — 扫描项目文件夹，推荐最佳技能/插件/工具搭配，检测冗余、缺失和更新。每项建议附带三段解释：为什么做、有什么效果、用来干什么。
+> **Project Skill Audit** — 扫描项目文件夹，分析技术栈和项目类型，生成全面的技能/插件/工具推荐报告。画像驱动·四维评分·描述精炼。
 >
 > **跨平台**: ZCode · Claude Code · Codex · Cursor · Windsurf
 
-[![Version](https://img.shields.io/badge/version-4.0.0-blue)](VERSION)
+[![Version](https://img.shields.io/badge/version-4.3.0-blue)](VERSION)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-ZCode%20%7C%20Claude%20Code%20%7C%20Codex-lightgrey)]()
 
@@ -12,22 +12,9 @@
 
 ## Overview
 
-**EN**: Scans your active project folder, analyzes its tech stack and project type, then generates a comprehensive skill/plugin/tool recommendation report. Each suggestion includes a 3-part explanation: **why** it's needed, **what effect** it has, and **how to use** it. Detects redundant skills, missing essentials, and available updates. Optionally searches the web for better alternatives.
+**EN**: Scans your active project folder, profiles the tech stack, then scores installed skills on 4 dimensions (Fit/Value/Fresh/Community), checks description quality, and searches the web for better alternatives. Each suggestion includes a 3-part explanation: **原因** (why), **效果** (effect), **场景** (use case).
 
-**CN**: 扫描你的开发中项目，分析技术栈和项目类型，生成全面的技能/插件/工具推荐报告。每项建议附带三段解释：**为什么**做、**有什么效果**、**用来干什么**。检测冗余技能、缺失必备技能和可用更新，可选搜索网络寻找更优替代方案。
-
-### Core Capabilities
-
-| Feature | 功能 |
-|---------|------|
-| 📁 **Project Scan** | 项目扫描 — 识别语言、框架、构建系统、项目类型 |
-| 🔍 **Skill Inventory** | 技能清单 — 列出所有已安装技能及其版本 |
-| 🎯 **Smart Matching** | 智能匹配 — 基于项目类型推荐最佳技能组合 |
-| ❌ **Redundancy Detection** | 冗余检测 — 标记与项目不匹配的技能 |
-| ⚠️ **Gap Analysis** | 缺失分析 — 推荐但未安装的技能 |
-| 🔄 **Version Check** | 版本检查 — 检测已安装技能的可用更新 |
-| 🌐 **Web Alternatives** | 网络搜索 — 寻找评分更高的替代技能 |
-| 📋 **Detailed Report** | 详细报告 — 每项建议含三段式解释 |
+**CN**: 扫描开发中项目，构建项目角色画像，四维评分已安装技能，检查描述规范，搜索网络备选。每项建议附带三段解释：**原因**、**效果**、**场景**。
 
 ---
 
@@ -35,9 +22,9 @@
 
 | Platform | Trigger | Example |
 |----------|---------|---------|
-| **ZCode** | `skills-audit` or `技能审查` or `项目审计` | `> skills-audit ./my-project` |
+| **ZCode** | `技能审查`（主）/ `技能审计` `项目审查` `项目审计` / `skills-audit` | `> 技能审查 ./my-project` |
 | **Claude Code** | `/skills-audit` | `> /skills-audit ./my-project` |
-| **Codex** | `skills-audit` or `项目审计` | `> skills-audit ./my-project` |
+| **Codex** | `技能审查` / `skills-audit` | `> skills-audit ./my-project` |
 | **Cursor** | `@skills-audit` | `> @skills-audit ./my-project` |
 
 **Parameter**: Optional project path. Defaults to current working directory.
@@ -48,43 +35,18 @@
 
 ```
 ⓪ Load config → ① Scan project → ② List installed skills
-③ Match project→skills → ④ Gap analysis (redundant/missing/outdated)
-⑤ Web search for alternatives → ⑥ Generate report
+③ Load reference maps → ④ 3-tier + 3-dim scoring + desc check
+⑤ Web search + external signals → ⑥ Fill Community + final report
 ⑦ User confirms → Execute actions → ⑧ Persist data
 ```
-
-### Report Format / 报告格式
-
-Each recommendation includes three sections:
-
-| Section | Label | What it tells you |
-|---------|-------|-------------------|
-| 🔍 **Why** | 为什么 | Causal logic: why this suggestion applies to YOUR project |
-| 💡 **Effect** | 有什么效果 | Quantifiable improvement: what changes after you act |
-| 🎯 **Use Case** | 用来干什么 | Concrete scenario: when in your workflow you'll use this |
 
 ---
 
 ## Config / 配置
 
-Edit `config.yaml` to customize scan paths, project scan settings, and version check behavior.
+Edit `config.yaml` (唯一配置源) to customize scan paths, project scan settings, and version check behavior.
 
-```yaml
-scan_paths:
-  - name: "用户技能 (.agents)"
-    path: "~/.agents/skills/*/"
-    type: user
-
-project_scan:
-  max_depth: 10
-  max_files: 2000
-  ignore_patterns: ["node_modules", ".git", ".venv"]
-
-version_check:
-  enabled: true
-```
-
-See [SKILL.md](SKILL.md) for full config reference.
+See [SKILL.md](SKILL.md) for full reference.
 
 ---
 
@@ -99,45 +61,47 @@ Windows PowerShell:
 iwr https://raw.githubusercontent.com/gtbwpkwjnb-alt/skills-audit-skill/main/install.ps1 | iex
 ```
 
-### Manual
-
-```bash
-# ZCode
-git clone git@github.com:gtbwpkwjnb-alt/skills-audit-skill.git ~/.agents/skills/skills-audit
-
-# Claude Code
-git clone git@github.com:gtbwpkwjnb-alt/skills-audit-skill.git ~/.claude/skills/skills-audit
-
-# Codex
-git clone git@github.com:gtbwpkwjnb-alt/skills-audit-skill.git ~/.codex/skills/skills-audit
-```
-
 ---
 
 ## Changelog
 
+### v4.3.0 (2026-06-22) — 全维度优化
+
+- 🔄 **评分流程修正**：Community 维度步骤④暂用默认值，步骤⑤回填真实数据
+- 📉 **步骤③精简**：移除冗余初筛，仅加载参考数据到内存
+- 🎯 **Value 维度重构**：从固定类别分改为项目匹配加成（T1 +10）
+- 📊 **健康度行重设计**：活跃数(含分层) + 建议归档数，均分仅计活跃技能
+- 🧹 **边界规则去重**：15 条合并为 10 条
+- 🗑️ **去重逻辑**：同 name 技能优先用户版→版本号高者
+- ↩️ **归档/描述修改增加 undo**：复制归档+备份描述
+- 🔍 **搜索模板明确化**：中英各一次、取前5、去重规则
+- ⚡ **外部信号增量缓存**：首次全量获取，后续仅增量（GitHub 7天/npm 30天过期）
+- 📝 **简评限制放宽**：≤12字 → ≤16字
+- 📁 **project-types 扩展**：新增 Flutter/C++/Svelte/数据科学 4 种类型
+
+### v4.2.0 (2026-06-20) — 触发词·语言·自检
+
+- 🏷️ 触发词优化：`技能审查` 为主，`技能审计/项目审查/项目审计` 为同义词
+- 🌐 output_language 三态驱动（auto/zh/en）
+- 🔍 自检锚点：审计完成后必须检查自身 description
+- ✏️ 描述优化询问 + 修改描述执行操作
+
 ### v4.0.0 (2026-06-19) — 项目技能推荐引擎
 
-- 🎯 **New focus**: Project-based skill recommendation (was: skill quality audit)
-- 📁 **Project scanning**: Auto-detect language, framework, build system, project type
-- 🧠 **Smart matching**: 15+ project type patterns in `references/project-types.yaml`
-- 📋 **3-part explanations**: Every recommendation has Why/Effect/Use Case
-- ❌ **Redundancy detection**: Flags skills irrelevant to your project
-- ⚠️ **Gap analysis**: Recommends missing but valuable skills
-- 🔄 **Version check**: Compares installed vs registry versions in `references/skill-registry.yaml`
-- 🌐 **Web search**: Finds better alternatives online
-- 📚 **Reference files**: `references/project-types.yaml` + `references/skill-registry.yaml`
-- 🔧 **Extended config**: `project_scan`, `version_check` sections
-
-### v3.0.0 (2026-06-18) — 多平台通用化
-
-- Multi-platform, configurable scan paths, generic 4D scoring
-
-### v2.3.0 — ZCode 专用版 (原名 skill-manager)
-
-- Profile, 4D scoring, optimization suggestions, auto-persistence
+- 🎯 项目角色画像驱动 · 四维评分 · 5块永不塌缩报告
+- 📁 项目扫描 + 15+ 项目类型模式
+- 🌐 网络搜索备选技能
 
 ---
+
+## Development Self-Test / 开发自测
+
+每次修改后验证：
+
+1. **项目扫描**：在 2 个不同类型的项目上运行，确认类型推断正确
+2. **匹配测试**：已知项目类型→检查推荐列表是否合理
+3. **分层测试**：添加不匹配技能，确认归入 T3 且标注建议归档
+4. **持久化测试**：确认 `activity-log.jsonl` 可写且格式正确
 
 ## Feedback
 

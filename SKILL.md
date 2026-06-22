@@ -1,11 +1,11 @@
 ---
 name: skills-audit
-version: "4.2.0"
-description: 技能审查 → 画像驱动·四维评分·描述精炼（同义：技能审计/项目审查/项目审计）| Skill Audit → profile-driven 4D scoring & refine
+version: "4.3.0"
+description: 技能审查 → 画像驱动·四维评分·规划追踪
 user-invocable: true
 ---
 
-# Skills Audit v4.2 — 画像驱动 · 四维评分 · 描述精炼 · 5块报告
+# Skills Audit v4.3.0 — 画像驱动 · 四维评分 · 描述精炼 · 5块报告
 
 > **四大核心能力**: ①项目角色画像驱动 ②四维评分(含外部⭐+描述质量) ③自动精炼技能描述为触发词→功能简介 ④5块永不塌缩报告。
 >
@@ -15,12 +15,7 @@ user-invocable: true
 
 ## 触发方式
 
-| 平台 | 触发 | 示例 |
-|------|------|------|
-| **ZCode** | `技能审查`（主）/ `技能审计` `项目审查` `项目审计` / `skills-audit` | `> skills-audit ./my-project` |
-| **Claude Code** | `/skills-audit` | `> /skills-audit ./my-project` |
-| **Codex** | `技能审查` / `skills-audit` | `> skills-audit ./my-project` |
-| **Cursor** | `@skills-audit` | `> @skills-audit ./my-project` |
+**ZCode**: `技能审查`（主）/ `技能审计` `项目审查` `项目审计` / `skills-audit` · **Claude Code**: `/skills-audit` · **Codex/Cursor**: `技能审查` / `skills-audit`
 
 **参数**: 项目路径可选。不传则用当前工作目录。
 **触发规则**: 独立词触发。嵌入句子中不触发（如"帮我做一下技能审查"不触发）。
@@ -36,11 +31,12 @@ user-invocable: true
 - `project_scan` — 项目扫描配置（忽略模式、最大深度等）
 - `version_check` — 版本检查源 URL
 - `data_dir` — 持久数据目录
+- `external_signals_cache` — 外部信号缓存 TTL 配置
 
-然后读取 `references/project-types.yaml` 加载项目类型→推荐技能映射表。
-然后读取 `references/skill-registry.yaml` 加载已知技能注册表（含版本号和分类）。
+然后读取 `user-profile.md`（含用户高频技能偏好），用于个性化 T2/T3 判定和推荐。
+然后检查 `config.yaml` 与 `platforms/*.yaml` 的一致性（trigger_words / scan_paths 是否冲突），不一致则输出警告。
 
-> 找不到 references 文件时报 warning，继续执行（降级为仅靠 web 搜索推荐）。
+> references 文件（project-types.yaml / skill-registry.yaml）由步骤③加载。
 
 ### ① 项目扫描
 
@@ -63,6 +59,7 @@ user-invocable: true
 ```
 ┌─ 项目角色画像 ─────────────────────────────────┐
 │ 类型    <从 project-types.yaml 匹配>              │
+│ 阶段    <从文件特征推断：立项/开发/测试/部署/维护>  │
 │ 活动    <从文件特征推断的 3-5 个核心开发活动>      │
 │ 产物    <主要文件类型和输出格式>                   │
 │ 痛点    <从项目结构推断的 2-3 个潜在效率瓶颈>      │
@@ -101,13 +98,14 @@ user-invocable: true
 🔍 已安装技能: 用户 2 个 + 系统/插件 17 个
 ```
 
-### ③ 项目→技能匹配与初始筛选
+**去重**：同 `name` 的技能保留一个——优先 editable=true（用户版）→ 同 editable 则选版本号高者。去重数在输出中标注（如"去重 2 个"）。
 
-将项目角色画像与 `references/project-types.yaml` 交叉：
-- 匹配到的技能记入 **T1 候选集**（项目类型直接推荐）
-- 同时从 `references/skill-registry.yaml` 获取每个已安装技能的版本号和分类
+### ③ 加载参考数据
 
-> 此步为初筛。最终层级和评分由步骤④决定，不由 project-types.yaml 单方面裁决。
+从 disk 读取 `references/project-types.yaml`（项目类型→推荐技能映射）和 `references/skill-registry.yaml`（已知技能版本号+分类），加载到内存供步骤④使用。
+
+> 找不到 references 文件时报 warning，继续执行（降级为仅靠内置默认规则+web 搜索推荐）。
+> 此步不做任何筛选判定，仅为后续步骤准备数据。
 
 ### ④ 三级分层 + 四维评分 + 描述检查
 
@@ -120,19 +118,22 @@ user-invocable: true
 | **T3 专业** | 技能为特定项目类型设计，与"核心活动"零交集 | 建议归档 |
 
 > 判定密钥：把技能的 description 和项目画像的"活动"做交集。有交集 → T1；无交集但通用类别(debug/docs/review/管理/验证/设计等) → T2；明确服务其他类型(Android/iOS/特定迁移) → T3。
+> T1 技能之间做功能重叠检测：description 关键词相似度 >60% 则标 ⚠️ 建议二选一（如 subagent-driven-development vs dispatching-parallel-agents）。
 
-**第二步：四维评分（仅已安装技能，每技能 0-100）。**
+**第二步：四维评分（仅已安装技能，每技能 0-100）。Community 维度暂用默认值 25，步骤⑤获取真实数据后回填。**
 
 | 维度 | 权重 | 计算方式 |
 |------|------|---------|
 | **Fit** 项目匹配 | 40% | T1 → 85–100；T2 → 50–84；T3 → 0–49。与"核心活动"重合项数每多 1 项 +3，无重合 −5 |
-| **Value** 通用价值+描述质量 | 20% | ①类别分：debug/验证/审查/管理 → 80–100；设计/规划 → 70–89；文档/笔记 → 55–75；单一平台 → 30–55。②描述质量分：中文且格式合格 → +10；仅英文 → −10；超长/多行 → −10 |
-| **Fresh** 版本时效 | 20% | 版本 = registry 最新 → 100；落后 1 大版本 → 60；registry 无记录 → 50；落后 2+ → 30 |
-| **Community** 外部信号 | 20% | GitHub ⭐：≥1000 → 100，≥100 → 80，≥10 → 60，<10 → 30；npm 📥：≥1000/w → 100，≥100/w → 70，<100 → 40；最近更新：1月内 → 100，6月内 → 70，1年内 → 50，>1年 → 20。无公开 repo → 40 |
+| **Value** 项目价值+描述质量 | 20% | ①项目匹配加成：T1 +10，T2 持平，T3 −10。②类别微调（±5）：debug/验证/审查 +5；文档/笔记/管理 持平；设计/规划 −0；纯平台工具 −5。③使用频率（读取 `usage-*.json`）：高频调用 +5；低频 −5；零调用 −10。④描述质量分：中文且格式合格 → +10；仅英文 → −10；超长/多行 → −10 |
+| **Fresh** 版本时效 | 20% | 版本 = registry 最新 → 100；落后 1 大版本 → 60；registry 无记录 → 50；落后 2+ → 30；无版本号 → 40 |
+| **Community** 外部信号 | 20% | 步骤⑤获取前暂用默认值（无公开 repo → 25）。步骤⑤回填规则：GitHub ⭐≥1000→100，≥100→80，≥10→60，<10→30；npm 📥≥1000/w→100，≥100/w→70，<100→40；最近更新 1 月内→100，6 月内→70，1 年内→50，>1 年→20 |
 
 **总分 = Fit×0.4 + Value×0.2 + Fresh×0.2 + Community×0.2**
 
 分数 → 建议：≥70 ✅保留 · 40–69 🟡保留(低频) · <40 ❌建议归档
+
+> Community 维度在步骤④先用默认值，步骤⑤获取真实外部信号后回填到评分表。分层（T1/T2/T3）不受 Community 分影响。
 
 **第三步：描述质量检查（每个已安装的用户可编辑技能）。**
 
@@ -153,12 +154,22 @@ user-invocable: true
 | `zh` | 中文优先。纯英文→生成中文优化版 |
 | `en` | 英文优先。纯中文→生成英文优化版 |
 
+**精炼生成规则（不合格时自动生成优化版）：**
+
+| 步骤 | 规则 | 示例 |
+|------|------|------|
+| ① 提取触发词 | 从技能 name/frontmatter 取最常用中文调用名，无中文则用英文名 | `summarize` → `总结`；`brainstorming` → `头脑风暴` |
+| ② 构建简介 | `动词+宾语` 结构，2-4 个核心功能用 `·` 分隔。动词优先：创建/编辑/分析/提取/搜索/审查/追踪/管理 | `会话精炼·进度追踪·自动迭代` |
+| ③ 截断 | 超 40 字符时优先级：触发词 > 核心动词 > 宾语 > 修饰词。逐词删除直到 ≤40 | `完整的 DOCX 文档创建、编辑与分析能力…` → `DOCX 创建·编辑·分析` |
+| ④ 翻译 | 意译优先，功能对等 > 字面翻译；保持目标语言 ≤40 字符 | `Use when...` → `需求澄清·创意发散·方案对比` |
+| ⑤ 双语拼接 | `output_language` 的主语言在前，` \| ` 分隔，两侧各自 ≤40 字符 | `技能审查 → 画像驱动·四维评分·规划追踪 \| Skill Audit → profile-driven scoring` |
+
 > 系统/插件技能（editable=false）只标注问题，不自动修改。
 > 审计完成后必须回头检查 skills-audit 自身的 description 是否符合以上规范，不符合则自动修正（解决自指盲区）。
 
 **评分表行格式（已安装技能）：**
 ```
-#N  技能名           分  层级  ⭐外部信号  简评(≤12字)
+#N  技能名           分  层级  ⭐外部信号  简评(≤16字)
 ```
 
 示例：
@@ -167,19 +178,15 @@ user-invocable: true
 #5  sub-agents       78  T1    ⭐44·6月新  跨LLM子代理
 ```
 
-### ⑤ 画像驱动的网络搜索 + 外部信号
+### ⑤a 外部信号获取（缓存优先）
 
-**搜索关键词从画像提取：**
-```
-从画像.活动 提取英文关键词 → 组合为搜索串
-从画像.痛点 提取英文关键词 → 补充为第二搜索串
-示例: "skill authoring, agent orchestration"
-     → "AI coding agent skill management tool 2026"
-```
+从 `external-signals-cache.json` 加载缓存（首次运行为空）。
 
-**同时获取外部信号（与搜索并行）：**
+对每个已安装且 registry 中有 homepage 的技能，判定：
+- **有缓存且未过期** → 直接用缓存值（GitHub ⭐ 缓存 7 天，npm 📥 缓存 30 天）
+- **无缓存或已过期** → WebFetch 获取后写入缓存，标注 `fetched_at` 时间戳
+- **网络不可用** → 用缓存值（忽略过期），无缓存则用默认值 25
 
-对每个来自 GitHub/npm/PyPI 的技能，获取：
 ```
 GitHub: WebFetch api.github.com/repos/{owner}/{repo}
         → stargazers_count, pushed_at, description
@@ -189,14 +196,32 @@ PyPI:   WebFetch pypi.org/pypi/{package}/json
         → info.version, downloads
 ```
 
-> 一次 WebFetch 拿齐 ⭐ + 最后更新 + 描述。信号填入 Community 维度和评分表的"外部信号"列。
+> 同一 GitHub org 下多个 repo 合并为单次 API 请求。缓存写入 `external-signals-cache.json`。
+> 首次运行全量获取较慢，后续仅增量获取新技能或过期条目，大幅提速。
+> 获取完成后将真实 Community 分回填到步骤④的评分表。
 
-**结果格式（分为两区）：**
+### ⑤b 画像驱动的网络搜索
+
+**搜索关键词从画像提取：**
+```
+从画像.活动 提取英文关键词 → 组合为搜索串
+从画像.痛点 提取英文关键词 → 补充为第二搜索串
+示例: "skill authoring, agent orchestration"
+     → "AI coding agent skill management tool 2026"
+```
+
+**搜索执行规则：**
+- 中英文各 1 次搜索（从画像.活动提取 3 个英文 + 3 个中文关键词）
+- 每次取前 5 条结果
+- 同名技能去重（保留最高分来源）
+- 与已安装技能冲突时：优先展示已安装版本，网络结果标 🆕 仅作备选参考
+
+**结果格式：**
 
 网络推荐的备选技能（未安装）→ 单独 `🌐 网络推荐` 区域：
 ```
 🆕 [来源] · 技能名  ⭐X · 更新状态
-    <12字描述> · 当前项目适配理由
+    <≤16字描述> · 当前项目适配理由
 ```
 
 对外部技能的描述同样执行描述质量检查，不符合规范的在推荐时就给出优化版。
@@ -210,11 +235,14 @@ PyPI:   WebFetch pypi.org/pypi/{package}/json
 📋 项目角色画像
 ════════════════════════════════════════════════
 类型   <画像.类型>
+阶段   <画像.阶段>
 活动   <画像.活动>
 产物   <画像.产物>
 痛点   <画像.痛点>
 ════════════════════════════════════════════════
-健康度  N个 · 均分XX · T1:X T2:X T3:X
+已安装 N个 · 活跃 M (T1:X T2:Y) · 建议归档 Z (T3)
+活跃均分 XX · Community: 缓存命中 X/Y · 实时获取 Z
+📈 对比上次审计：均分 ±N · 新增活跃 K · 归档建议 ±P
 ════════════════════════════════════════════════
 
 📊 已安装技能评分（仅已安装，按分降序）
@@ -226,14 +254,16 @@ PyPI:   WebFetch pypi.org/pypi/{package}/json
 22 android-dev      36  T3   内置·官方     专为Android，无交集
 ════════════════════════════════════════════════
 
-📝 描述优化（N个）—仅已安装且描述不符合规范
+📝 描述优化（N个）—仅用户可编辑技能
 #  技能              问题              建议
  1 brainstorming     纯英文，格式不符   头脑风暴 → 需求澄清·创意发散·方案对比
  2 systematic-debug   纯英文             系统化调试 → 假设驱动·二分定位·根因分析
  ...
 ── 描述全部合格，无需优化 ── （无不合格项时的兜底）
 
-是否更新以上描述？ [回复"是"全部更新，或回复编号如"1 3"指定更新]
+──────────────────────────────────────────
+✏️ 是否更新以上描述？ [回复"是"全部更新，或回复编号如"1 3"指定更新]
+──────────────────────────────────────────
 ════════════════════════════════════════════════
 
 🌐 网络推荐备选（未安装，供评估）
@@ -249,6 +279,11 @@ PyPI:   WebFetch pypi.org/pypi/{package}/json
 [3] 评估 🆕 AllAgents        跨平台技能管理
  ...
 ── ✅ 无需调整，当前搭配合理 ──
+
+💡 建议搭配（T1 技能间的协同关系）
+  TDD + systematic-debugging → 先写测试再调试，互补增效
+  TDD + verification-before-completion → 测试+验证双保险
+  skill-creator + summarize → 创作+精炼闭环
 ════════════════════════════════════════════════
 ```
 
@@ -257,23 +292,27 @@ PyPI:   WebFetch pypi.org/pypi/{package}/json
 - 📊 评分表 → 仅已安装技能，按分降序。每条含外部信号(⭐/📥/更新状态)。未安装的不在此列。
 - 📝 描述优化 → 必定输出。检查语言/格式/长度。无不合格时显示兜底文本。
 - 🌐 网络推荐 → 必定输出。未安装的外部推荐，每条 ≤1 行。无结果时显示兜底。
-- 📌 操作 → 必定输出。有序号 [1][2]...，操作可以是归档/优化描述/安装/关注。
+- 📌 操作 → 必定输出。有序号 [1][2]...，操作可以是归档/优化描述/安装/关注。每条含 `🔍 原因:` `💡 效果:` `🎯 场景:` 三段（≤1行/段，≤40字/句）。保留项不加三段解释。禁止空泛词。
+- 💡 建议搭配 → T1 技能间的协同关系（3-5 组），标注互补原因。
 
 ### ⑦ 执行（用户确认后）
 
-只操作用户层技能（editable=true），不碰系统/插件层。
+**操作范围**：仅用户层技能（editable=true）。系统/插件层技能（editable=false）只读——可评分、标注、建议，禁止任何 Edit/Write/Bash 修改操作。
 
-- **归档**：技能目录移入 `config.yaml` 的 `archive_dir`
-- **修改描述**：用户确认后，Edit 对应技能 SKILL.md frontmatter 的 `description:` 行，替换为优化版描述
+- **归档**：技能目录**复制**到 `config.yaml` 的 `archive_dir`，原路径重命名为 `{原名}.archived`（非删除，可手动恢复）
+- **修改描述**：① 同目录创建 `.description.bak` 备份文件 ② Edit 对应技能 SKILL.md frontmatter 的 `description:` 行，替换为优化版描述
 - **安装**：给出安装命令示例（clone / 下载 / 安装脚本）
 - **更新**：给出更新方式
 - **搜索安装**：给出来源 URL
+- **回滚**：报告末尾附回滚命令——`还原描述: cp/mv (Linux) 或 copy/move (PowerShell)` / `还原归档: mv {name}.archived → {name} (Linux) 或 move (PowerShell)`
 
 ### ⑧ 持久化（始终执行）
 
-1. 项目画像 → 合并写入 `project-profiles.json`
-2. 运行统计 → 更新 `stats.json`
-3. 审计日志 → 追加 `activity-log.jsonl`
+1. 项目画像 → `project-profiles.json`（以项目 hash 为 key，含阶段+技能使用历史字段，覆盖不追加）
+2. 运行统计 → `stats.json`（仅存汇总统计，不含每条明细）
+3. 审计日志 → `activity-log.jsonl`（保留最近 50 条，超出自动截断。每条记录含本次审计评分+各技能调用次数（从 `usage-*.json` 读取））
+4. 外部信号缓存 → `external-signals-cache.json`（以技能 name 为 key，含 fetched_at 时间戳。仅供下次运行增量获取用）
+5. 审计快照 → 上次审计数据从 `activity-log.jsonl` 倒数第 2 条读取，写入报告生成 `📈 对比上次审计` 行
 
 **持久化失败不阻塞主流程**。
 
@@ -297,132 +336,43 @@ PyPI:   WebFetch pypi.org/pypi/{package}/json
 | SKILL.md (多文件) | AI Agent 技能开发 | 高 |
 | .csproj | C#/.NET | 中 |
 | Gemfile | Ruby | 中 |
+| pubspec.yaml 含 flutter | Flutter | 高 |
+| CMakeLists.txt | C/C++ | 中 |
+| package.json 含 svelte | Web前端-Svelte | 高 |
+| requirements.txt 含 pandas/numpy | 数据科学 | 高 |
 | Dockerfile | 容器化 | 低（辅助） |
 
 多特征叠加时合并推断（如 package.json 含 react + express → "全栈: React+Express"）。
 
 ---
 
-## 建议三段式解释规范
-
-每条可操作建议（冗余/缺失/更新/备选）包含三段解释：
-
-| 段落 | 标签 | 长度 | 要求 |
-|------|------|------|------|
-| 原因 | `🔍 原因:` | ≤1 行 | 基于项目具体特征的因果逻辑 |
-| 效果 | `💡 效果:` | ≤1 行 | 可量化或可感知的预期改善 |
-| 场景 | `🎯 场景:` | ≤1 行 | 日常工作流中的具体使用入口 |
-
-**精炼规则**：
-- 每句不超过 40 个字。超过则拆分，拆分仍超则删冗余词。
-- 保留项（✅）不加三段解释——已知在用无需说服。
-- 禁止空泛词（"提升开发效率"、"最佳实践"、"增强代码质量"）——必须说明**通过什么机制、达到什么效果、在什么场景用**。
-
----
-
 ## config.yaml 格式
 
+完整配置见同目录 `config.yaml` 文件。核心结构：
+
 ```yaml
-# skills-audit v4.0 配置
-data_dir: "$SKILL_DIR"           # 数据存放目录
-archive_dir: "$SKILL_DIR/../archived"  # 归档目录
-
-scan_paths:
-  - name: "用户技能"
-    path: "~/.agents/skills/*/"
-    type: user
-    editable: true
-  - name: "用户技能 (ZCode)"
-    path: "~/.zcode/skills/*/"
-    type: user
-    editable: true
-  - name: "Claude Code 技能"
-    path: "~/.claude/skills/*/"
-    type: user
-    editable: true
-  - name: "插件技能 (ZCode示例)"
-    path: "~/.zcode/cli/plugins/cache/*/*/skills/*/"
-    type: system
-    editable: false
-
-# 项目扫描配置
-project_scan:
-  max_depth: 10                  # 最大扫描深度
-  max_files: 1000                # 最多扫描文件数
-  ignore_patterns:               # 忽略模式（默认值，不可覆盖 .gitignore）
-    - "node_modules"
-    - ".git"
-    - ".venv"
-    - "__pycache__"
-    - "dist"
-    - "build"
-    - ".next"
-    - "target"
-    - "vendor"
-
-# 版本检查
-version_check:
-  enabled: true
-  # registry_url 为空时仅依赖本地 skill-registry.yaml
-  registry_url: ""
-  # 搜索关键词模板（用于 web 搜索补充）
-  search_template: "{skill_name} AI agent skill latest version"
-
-# 输出语言
-output_language: "auto"  # auto / zh / en
+# skills-audit v4.3 配置
+scan_paths: [...]            # 技能扫描路径（用户+系统/插件）
+project_scan: { max_depth, max_files, ignore_patterns }
+version_check: { enabled, registry_url }
+output_language: "auto"      # auto / zh / en
+external_signals_cache: { github_ttl_days: 7, npm_ttl_days: 30 }
 ```
-
----
-
-## 自测验证
-
-每次修改后验证：
-
-1. **项目扫描测试**：在 2 个不同类型的项目上运行步骤①，确认类型推断正确
-2. **匹配测试**：已知项目类型→检查推荐技能列表是否合理
-3. **冗余检测测试**：添加一个不匹配的技能，确认被标记为冗余
-4. **持久化测试**：确认 `activity-log.jsonl` 可写且格式正确
 
 ---
 
 ## 边界规则
 
-- **触发**：仅 `技能审查`（主）/ `技能审计` / `项目审查` / `项目审计` / `skills-audit` 独立打出；嵌入句子不触发
-- **路径参数**：支持绝对路径和相对路径；路径不存在时报错终止
-- **三级分层**：T1/T2/T3 判定以项目角色画像的"核心活动"为唯一尺度，禁止退回全局/领域二分
-- **评分必出**：每个已安装技能必须有分数+层级+外部信号+简评。未安装技能不进评分表
-- **描述优化必出**：每个已安装技能的 description 必须检查语言/格式/长度，不合格的自动生成优化版。系统插件仅标注不修改
-- **报告 5 块永不塌缩**：画像·评分·描述优化·网络推荐·操作，每块必定输出。空区显示兜底文本
-- **已安装≠网络推荐**：评分表仅限已安装技能。网络推荐独立区域，不加分号，标 🆕
-- **外部信号必取**：对有公开仓库的技能，搜索时并行获取 GitHub⭐/npm📥/更新时间
-- **确认**：步骤⑦必须等用户确认后才执行操作
-- **不自动执行**：归档/安装/更新/描述修改必须用户确认
-- **不碰系统工具**：系统工具只评分+标注，不自动修改
-- **Web 搜索降级**：网络不可用时跳过步骤⑤，不影响其他步骤。外部信号用 registry 缓存值兜底
-- **references 文件缺失降级**：使用内置默认规则，不阻塞
-- **始终持久化**：⑧ 在每次运行末尾执行，不依赖⑦
-- **输出精炼**：禁用 >60 字符宽的表格；评分表每条 ≤1 行；同类栏目不分散
-
-### 内置默认规则（references 文件缺失时使用）
-
-```yaml
-# 硬编码的极简规则，仅当 references/project-types.yaml 不存在时生效
-project_types:
-  - pattern: "package.json"
-    type: "Node.js/JavaScript"
-    recommended: ["test-driven-development", "systematic-debugging"]
-  - pattern: ".py"
-    type: "Python"
-    recommended: []
-  - pattern: "Cargo.toml"
-    type: "Rust"
-    recommended: []
-  - pattern: "SKILL.md"
-    type: "AI Agent Skill"
-    recommended: ["skill-creator"]
-```
-
----
+- **触发**：仅独立打出触发词（`技能审查`/`技能审计`/`项目审查`/`项目审计`/`skills-audit`）；嵌入句子不触发
+- **路径**：支持绝对路径和相对路径；路径不存在时报错终止
+- **分层**：T1/T2/T3 以项目角色画像"核心活动"为唯一尺度，禁止退回全局/领域二分
+- **评分**：每个已安装技能必须有分数+层级+外部信号+简评（≤16字）；Community 维度步骤⑤回填；未安装技能不进评分表
+- **描述**：每个已安装技能 description 检查语言/格式/长度，不合格自动生成优化版；系统/插件技能只标注不修改
+- **报告5块**：画像·评分·描述优化·网络推荐·操作，每块必定输出，空区兜底；已安装技能不进网络推荐区
+- **外部信号**：首次全量获取 GitHub⭐/npm📥/更新时间，后续增量（GitHub 7天/npm 30天 TTL）；缓存命中直接使用；网络不可用忽略 TTL 用缓存兜底，无缓存用默认值 25
+- **确认执行**：所有归档/安装/更新/描述修改操作必须用户确认后执行（步骤⑦）；系统/插件层技能（editable=false）仅只读——可评分、标注、建议，禁止任何修改操作
+- **降级**：Web 不可用跳过步骤⑤；references 缺失用内置默认规则（Node.js→TDD+debug / Python→debug / Rust→debug / AI Skill→skill-creator）；持久化失败不阻塞主流程
+- **输出**：禁用 >60 字符宽表格；评分表每条 ≤1 行；同类栏目不分散
 
 ## 平台配置
 

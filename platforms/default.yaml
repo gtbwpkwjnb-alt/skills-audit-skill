@@ -3,5 +3,5 @@ scan_paths:
   user: "~/.agent-skills/*/"
   plugin: ""
 archive_dir: "~/.agent-skills-archived/"
-trigger_words: ["skills-audit", "project-audit"]
+trigger_words: ["skills-audit", "project-audit", "技能审查", "技能审计"]
 project_scan_default_depth: 8

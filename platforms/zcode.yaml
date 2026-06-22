@@ -1,8 +1,5 @@
 platform: zcode
-scan_paths:
-  user: "~/.zcode/skills/*/"
-  user_alt: "~/.agents/skills/*/"
-  plugin: "~/.zcode/cli/plugins/cache/*/*/skills/*/"
+# scan_paths 定义已迁移到 config.yaml（唯一配置源），此文件仅存平台特征。
 archive_dir: "~/.zcode/skills-archived/"
-trigger_words: ["skills-audit", "技能审查", "项目审计"]
+trigger_words: ["技能审查", "技能审计", "项目审查", "项目审计", "skills-audit"]  # 技能审查为主触发词
 project_scan_default_depth: 10

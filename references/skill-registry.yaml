@@ -7,7 +7,7 @@
 #   2. 分类标记 → 推荐时按类别分组
 #   3. 来源追溯 → 用户可查安装来源
 #
-# 更新方式：手动维护 + web 搜索辅助验证
+# 更新方式：手动维护 + web 搜索辅助验证 + 审计时与各技能 SKILL.md/README/VERSION 交叉比对
 
 skills:
   # ---- User Skills (用户技能, .agents/skills/) ----

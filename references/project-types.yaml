@@ -259,6 +259,30 @@
       effect: "系统化调试弥补动态类型的不足"
       use_case: "当 TypeError 或 AttributeError 出现时系统化定位"
 
+# ============================================================================
+# Data Science / ML
+# ============================================================================
+
+- pattern:
+    files: ["requirements.txt"]
+    contains_deps: ["pandas", "numpy"]
+  type: "数据科学"
+  description: "Python 数据科学/机器学习项目"
+  aliases: ["Data Science", "ML", "数据分析", "机器学习"]
+  skills:
+    - name: "systematic-debugging"
+      priority: essential
+      category: debug
+      why: "数据管道的错误往往在多个步骤后才暴露，回溯定位成本高"
+      effect: "假设驱动的排查减少对中间结果的盲目检查"
+      use_case: "当数据输出不符合预期时按 pipeline 分段排查"
+    - name: "verification-before-completion"
+      priority: recommended
+      category: dev
+      why: "数据分析结论容易因数据质量或计算错误而偏差"
+      effect: "每次分析都有可重复验证流程，减少结论错误"
+      use_case: "声称分析完成前运行数据质量检查+结果验证"
+
 - pattern:
     files: ["requirements.txt"]
     type: "Python"
@@ -298,14 +322,26 @@
   type: "Java-Maven"
   description: "Java Maven 项目"
   aliases: ["Java", "Maven", "Java 项目"]
-  skills: []
+  skills:
+    - name: "systematic-debugging"
+      priority: recommended
+      category: debug
+      why: "Java 异常栈长、框架层级深，系统化调试减少盲目排查"
+      effect: "从异常定位到根因的时间缩短 50%"
+      use_case: "当 Spring/Hibernate 抛深层异常时按假设→验证闭环排查"
 
 - pattern:
     files: ["build.gradle", "build.gradle.kts"]
   type: "Java-Gradle"
   description: "Java Gradle 项目"
   aliases: ["Java", "Gradle", "Kotlin", "Java 项目"]
-  skills: []
+  skills:
+    - name: "systematic-debugging"
+      priority: recommended
+      category: debug
+      why: "Gradle 构建失败或 Kotlin/Java 混编时错误信息不直观"
+      effect: "结构化排查替代反复 gradle clean rebuild"
+      use_case: "构建失败或运行时异常时系统排查"
 
 # ============================================================================
 # C# / .NET
@@ -316,7 +352,13 @@
   type: "C#/.NET"
   description: "C# / .NET 项目"
   aliases: ["C#", ".NET", "Dotnet", "CSharp"]
-  skills: []
+  skills:
+    - name: "systematic-debugging"
+      priority: recommended
+      category: debug
+      why: ".NET 的异步异常和 EF Core 查询问题排查链路长"
+      effect: "系统化方法替代反复打断点"
+      use_case: "当 LINQ 查询或异步操作异常时系统排查"
 
 # ============================================================================
 # Ruby
@@ -327,7 +369,97 @@
   type: "Ruby"
   description: "Ruby 项目"
   aliases: ["Ruby", "Ruby on Rails", "Rails"]
-  skills: []
+  skills:
+    - name: "systematic-debugging"
+      priority: recommended
+      category: debug
+      why: "Ruby 动态特性和 Rails magic 在出错时回溯困难"
+      effect: "假设驱动的调试减少对 Rails console 的依赖"
+      use_case: "当 ActiveRecord 查询或路由异常时系统排查"
+
+# ============================================================================
+# Flutter / Dart
+# ============================================================================
+
+- pattern:
+    files: ["pubspec.yaml"]
+    contains_deps: ["flutter"]
+  type: "Flutter"
+  description: "Flutter 移动/桌面项目"
+  aliases: ["Flutter", "Dart", "移动端"]
+  skills:
+    - name: "systematic-debugging"
+      priority: essential
+      category: debug
+      why: "Flutter Widget 树重建和状态管理问题排查需要系统方法"
+      effect: "将 UI Bug 定位从猜测改为推演，减少反复 hot reload"
+      use_case: "当 Widget 不更新或布局异常时系统化排查"
+    - name: "test-driven-development"
+      priority: recommended
+      category: dev
+      why: "Flutter 内置 widget testing 框架，适合 TDD"
+      effect: "提升组件测试覆盖率，减少手动测试时间"
+      use_case: "写新 Widget 前先写 widget test"
+
+- pattern:
+    files: ["pubspec.yaml"]
+  type: "Dart"
+  description: "Dart 项目"
+  aliases: ["Dart"]
+  skills:
+    - name: "systematic-debugging"
+      priority: recommended
+      category: debug
+      why: "Dart 的异步模型和 isolate 机制调试链路长"
+      effect: "结构化排查减少调试时间"
+      use_case: "当异步操作或 isolate 行为异常时系统排查"
+
+# ============================================================================
+# C / C++
+# ============================================================================
+
+- pattern:
+    files: ["CMakeLists.txt"]
+  type: "C/C++"
+  description: "C/C++ 项目（CMake 构建）"
+  aliases: ["C", "C++", "Cpp", "CMake"]
+  skills:
+    - name: "systematic-debugging"
+      priority: essential
+      category: debug
+      why: "C/C++ 的内存错误和未定义行为排查难度高"
+      effect: "假设驱动的系统化调试减少随机试错"
+      use_case: "当 segfault 或内存泄漏出现时按步骤定位"
+    - name: "test-driven-development"
+      priority: recommended
+      category: dev
+      why: "C/C++ 有 GoogleTest/Catch2 等成熟测试框架"
+      effect: "提前发现内存和逻辑错误，减少调试时间"
+      use_case: "写函数前先写单元测试"
+
+# ============================================================================
+# Svelte
+# ============================================================================
+
+- pattern:
+    files: ["package.json"]
+    contains_deps: ["svelte"]
+  type: "Web前端-Svelte"
+  description: "Svelte 前端项目"
+  aliases: ["Svelte", "SvelteKit"]
+  skills:
+    - name: "systematic-debugging"
+      priority: essential
+      category: debug
+      why: "Svelte 的编译时魔法和响应式声明在出错时栈追踪不直观"
+      effect: "系统化排查减少对编译器行为的猜测"
+      use_case: "当 reactive declaration 或 store 不触发时系统排查"
+    - name: "verification-before-completion"
+      priority: recommended
+      category: dev
+      why: "Svelte 项目通常较小，容易跳过验证步骤"
+      effect: "确保每次完成都经过标准验证流程"
+      use_case: "组件完成后运行测试+检查清单"
 
 # ============================================================================
 # Container / DevOps
@@ -368,3 +500,15 @@
       why: "无论什么项目，『完成』的标准需要有可重复验证流程"
       effect: "每次完成有据可查，减少遗漏"
       use_case: "开发任务完成后的标准化验证"
+    - name: "summarize"
+      priority: optional
+      category: docs
+      why: "任何项目的长会话都会累积上下文，需要定期精炼"
+      effect: "保持会话清洁，减少 token 浪费，进度可追踪"
+      use_case: "长会话或跨会话交接时自动精炼"
+    - name: "requesting-code-review"
+      priority: optional
+      category: review
+      why: "任何代码项目都能从结构化审查中受益"
+      effect: "拦截常见问题，提升代码一致性"
+      use_case: "完成功能后提 PR 前自动生成审查清单"
